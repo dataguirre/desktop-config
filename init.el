@@ -5,7 +5,17 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (set-fringe-mode 10)
-(set-face-attribute 'default nil :height 90)
+(set-face-attribute 'default nil :height 110)
+
+(global-display-line-numbers-mode t)
+
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                treemacs-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;(load-theme 'tango-dark)
 
@@ -53,9 +63,55 @@
   :config
   (conda-env-initialize-interactive-shells))
 
+;; (use-package anaconda-mode
+;;   :ensure t
+;;   :init
+;;   (add-hook 'python-mode-hook 'anaconda-mode)
+;;   (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+
+
+;;Eglot (cliente LSP)
+;; (use-package eglot
+;;   :hook ((python-mode . eglot-ensure)
+;;          Agrega otros modos según sea necesario
+;;        )
+;;   )
+
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (python-mode . lsp)
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+(use-package lsp-jedi)
+
+(use-package company
+  :hook ((python-mode . company-mode)
+	 )
+  :bind (:map company-active-map ("TAB" . company-complete-selection))
+  )
+
+(use-package sphinx-doc
+  :hook ((python-mode . sphinx-doc-mode))
+  )
+
+;(define-key company-active-map [tab] 'company-complete-selection)
+;(define-key company-active-map (kbd "TAB") 'company-complete-selection)
+
+;; (use-package lsp-pyright
+;;   :ensure t
+;;   :hook (python-mode . (lambda ()
+;;                           (require 'lsp-pyright)
+;;                           (lsp))))  ; or lsp-deferred
+
+;; Notebooks jupyter
 (use-package ein)
 
-;; UI emacs
+;; UI DOOM emacs
 (use-package doom-themes
   :ensure t
   :config
@@ -106,3 +162,18 @@
           (set-window-buffer (next-window) next-win-buffer)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ispell-dictionary nil)
+ '(ivy-mode t)
+ '(package-selected-packages
+   '(sphinx-doc lsp-jedi lsp-mode lsp-pyright company anaconda-mode eglot use-package ivy ein doom-themes doom-modeline conda)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

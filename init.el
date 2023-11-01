@@ -57,11 +57,15 @@
   :config
   (ivy-mode 1))
 
+;; Python cofig
+
 (use-package conda
   :init
   (setq conda-anaconda-home (expand-file-name "~/miniconda3"))  ; Ajusta la ruta según tu instalación
   :config
-  (conda-env-initialize-interactive-shells))
+  (conda-env-initialize-interactive-shells)
+  (conda-env-initialize-eshell)
+  (conda-env-autoactivate-mode t))
 
 ;; (use-package anaconda-mode
 ;;   :ensure t
@@ -77,6 +81,7 @@
 ;;        )
 ;;   )
 
+;; Cliente LSP
 (use-package lsp-mode
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
@@ -89,16 +94,24 @@
 
 (use-package lsp-jedi)
 
+;; mejoras de autocompletado
+
 (use-package company
   :hook ((python-mode . company-mode)
 	 )
   :bind (:map company-active-map ("TAB" . company-complete-selection))
   )
-
+;; autodocstrings
 (use-package sphinx-doc
   :hook ((python-mode . sphinx-doc-mode))
   )
 
+;; hover
+(use-package lsp-ui :commands lsp-ui-mode)
+
+(use-package which-key
+    :config
+    (which-key-mode))
 ;(define-key company-active-map [tab] 'company-complete-selection)
 ;(define-key company-active-map (kbd "TAB") 'company-complete-selection)
 
@@ -110,6 +123,11 @@
 
 ;; Notebooks jupyter
 (use-package ein)
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (electric-pair-mode 1)))
+
 
 ;; UI DOOM emacs
 (use-package doom-themes
@@ -162,18 +180,3 @@
           (set-window-buffer (next-window) next-win-buffer)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ispell-dictionary nil)
- '(ivy-mode t)
- '(package-selected-packages
-   '(sphinx-doc lsp-jedi lsp-mode lsp-pyright company anaconda-mode eglot use-package ivy ein doom-themes doom-modeline conda)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

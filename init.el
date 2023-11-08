@@ -58,8 +58,8 @@
          :map ivy-reverse-i-search-map
          ("C-k" . ivy-previous-line)
          ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (ivy-mode 1))
+   :init
+    (add-hook 'after-init-hook 'ivy-mode))
 
 ;; CONFIGURACIÓN DE PYTHON
 ;; para manejar projectos (debe haber .git o crear un .projectile en la carpeta raiz)

@@ -1,3 +1,6 @@
+(when (file-exists-p "~/.Xmodmap")
+  (shell-command "xmodmap ~/.Xmodmap"))
+
 ;;  Basic configuration (initial config)
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)
@@ -14,7 +17,8 @@
                 term-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
-                eshell-mode-hook))
+                eshell-mode-hook
+		inferior-python-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;(load-theme 'tango-dark)
@@ -57,8 +61,15 @@
   :config
   (ivy-mode 1))
 
-;; Python cofig
+;; CONFIGURACIÓN DE PYTHON
+;; para manejar projectos (debe haber .git o crear un .projectile en la carpeta raiz)
+(use-package projectile
+  :init
+  (projectile-mode +1)
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
+;; manejar ambientes virtuales con conda
 (use-package conda
   :init
   (setq conda-anaconda-home (expand-file-name "~/miniconda3"))  ; Ajusta la ruta según tu instalación
@@ -67,40 +78,50 @@
   (conda-env-initialize-eshell)
   (conda-env-autoactivate-mode t))
 
-;; (use-package anaconda-mode
-;;   :ensure t
-;;   :init
-;;   (add-hook 'python-mode-hook 'anaconda-mode)
-;;   (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+;; utilizar ipython por defecto
+(setq python-shell-interpreter "ipython"
+      python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True")
 
+;; cargar autoreload siempre cuando se abra un ipython
+(defun my-ipython-autoreload-setup ()
+  (python-shell-send-string "%load_ext autoreload")
+  (python-shell-send-string "%autoreload 2"))
+(add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup)
 
-;;Eglot (cliente LSP)
-;; (use-package eglot
-;;   :hook ((python-mode . eglot-ensure)
-;;          Agrega otros modos según sea necesario
-;;        )
-;;   )
-
-;; Cliente LSP
-(use-package lsp-mode
-  :init
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-l")
-  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (python-mode . lsp)
-         ;; if you want which-key integration
-         (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp)
-
-(use-package lsp-jedi)
-
-;; mejoras de autocompletado
-
+; mejorar autocompletado con company
 (use-package company
   :hook ((python-mode . company-mode)
 	 )
   :bind (:map company-active-map ("TAB" . company-complete-selection))
   )
+
+(use-package lsp-mode
+  :init
+  (setq lsp-keymap-prefix "C-l")
+  :hook ((python-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :config
+  (define-key lsp-mode-map [tab] nil)  ; Unbind the existing TAB binding
+  (define-key lsp-mode-map (kbd "TAB") 'my/tab-completion-or-indent)  ; Rebind to custom function
+  :commands lsp)
+
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "TAB") 'company-complete-selection)
+  (define-key company-active-map [tab] 'company-complete-selection)
+(defun my/tab-completion-or-indent ()
+  "Indents or completes depending on the context.
+If preceding character is part of a word or a parenthetical, invoke `completion-at-point`.
+Otherwise, indent the current line."
+  (interactive)
+  (if (looking-back "[\\w\\_\\-\\(\\)\\[\\]{}]" 1)
+      (completion-at-point)
+    (indent-for-tab-command)))
+)
+
+
+(use-package lsp-jedi)
+
+
 ;; autodocstrings
 (use-package sphinx-doc
   :hook ((python-mode . sphinx-doc-mode))
@@ -112,22 +133,51 @@
 (use-package which-key
     :config
     (which-key-mode))
-;(define-key company-active-map [tab] 'company-complete-selection)
-;(define-key company-active-map (kbd "TAB") 'company-complete-selection)
 
-;; (use-package lsp-pyright
-;;   :ensure t
-;;   :hook (python-mode . (lambda ()
-;;                           (require 'lsp-pyright)
-;;                           (lsp))))  ; or lsp-deferred
 
-;; Notebooks jupyter
-(use-package ein)
+(with-eval-after-load 'python
+      (define-key inferior-python-mode-map (kbd "<up>") 'comint-previous-input)
+      (define-key inferior-python-mode-map (kbd "<down>") 'comint-next-input))
 
-(add-hook 'python-mode-hook
-          (lambda ()
-            (electric-pair-mode 1)))
 
+(add-hook 'python-mode-hook(lambda () (electric-pair-mode 1)))
+
+(use-package code-cells
+  :hook (python-mode . code-cells-mode)
+  :bind (:map code-cells-mode-map
+	      ("C-c C-c" . code-cells-eval)
+	      ("C-c C-l" . code-cells-load)
+	      ("C-c C-d" . code-cells-clear)
+	      ("C-M-<up>" . code-cells-backward-cell)
+	      ("C-M-<down>" . code-cells-forward-cell)
+	     ; ("C-c C-<up>" . code-cells-move-cell-up)
+	     ; ("C-c C-<down>" . code-cells-move-cell-down)
+	      ("C-c C-n" . insert-new-cell)
+          ("C-c C-m" . code-cells-move-mode))
+  :config
+  (defvar code-cells-move-mode-keymap
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "<up>") 'code-cells-move-cell-up)
+      (define-key map (kbd "<down>") 'code-cells-move-cell-down)
+      map)
+    "Keymap para `code-cells-move-mode`.")
+
+  (define-minor-mode code-cells-move-mode
+    "Modo menor para moverse entre celdas en `code-cells-mode`."
+    :lighter " CellMove"
+    :keymap code-cells-move-mode-keymap
+    (if code-cells-move-mode
+        (message "Move mode for code cells activated.")
+      (message "Move mode for code cells deactivated.")))
+  (defun insert-new-cell ()
+  "Insert a new code cell below the current position."
+  (interactive)
+  (end-of-line)
+  ;; Ensure there is one line between cells.
+  (unless (looking-at-p "\n#%%")
+    (newline))
+  (newline)
+  (insert "#%%\n")))
 
 ;; UI DOOM emacs
 (use-package doom-themes

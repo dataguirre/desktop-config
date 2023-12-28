@@ -11,6 +11,8 @@
 (set-face-attribute 'default nil :height 110)
 
 (global-display-line-numbers-mode t)
+;; para que tome snake_case como una palabra
+(global-superword-mode 1)
 
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
@@ -21,7 +23,34 @@
 		inferior-python-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-<") 'python-indent-shift-left) 
+(global-set-key (kbd "C->") 'python-indent-shift-right)
 ;(load-theme 'tango-dark)
+;; (defun desindentar-region-4-espacios ()
+;;   "Desindenta la región seleccionada en 4 espacios, manteniendo la selección."
+;;   (interactive)
+;;   (if (use-region-p)
+;;           (narrow-to-region (region-beginning) (region-end))
+;;           (indent-rigidly (point-min) (point-max) -4)))
+;;     (indent-rigidly (line-beginning-position) (line-end-position) -4)))
+
+;; (defun indentar-region-4-espacios ()
+;;   "Indentar la región seleccionada en 4 espacios, manteniendo la selección."
+;;   (interactive)
+;;   (if (use-region-p)
+;;       (save-excursion
+;;         (save-restriction
+;;           (narrow-to-region (region-beginning) (region-end))
+;;           (indent-rigidly (point-min) (point-max) 4)))
+;;     (indent-rigidly (line-beginning-position) (line-end-position) 4)))
+
+;; (defun configurar-python-mode ()
+;;   "Configura atajos de teclado específicos para python-mode."
+;;   (local-set-key [backtab] 'desindentar-region-4-espacios)
+;;   (local-set-key [tab] 'indentar-region-4-espacios))
+
+;; (add-hook 'python-mode-hook 'configurar-python-mode)
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -80,9 +109,9 @@
 
 ;; utilizar ipython por defecto
 (setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True")
+      python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True --InteractiveShell.colors='Linux' --InteractiveShell.autoindent=True")
 
-;; cargar autoreload siempre cuando se abra un ipython
+;; ;; cargar autoreload siempre cuando se abra un ipython
 (defun my-ipython-autoreload-setup ()
   (python-shell-send-string "%load_ext autoreload")
   (python-shell-send-string "%autoreload 2"))
@@ -142,6 +171,7 @@ Otherwise, indent the current line."
 
 (add-hook 'python-mode-hook(lambda () (electric-pair-mode 1)))
 
+
 (use-package code-cells
   :hook (python-mode . code-cells-mode)
   :bind (:map code-cells-mode-map
@@ -178,6 +208,16 @@ Otherwise, indent the current line."
     (newline))
   (newline)
   (insert "#%%\n")))
+
+(defun my-save-and-eval-cell ()
+  "Guarda el buffer y luego evalúa la celda de código."
+  (interactive)
+  (save-buffer)                      ; Guarda el buffer actual
+  (call-interactively 'code-cells-eval)) ; Llama a code-cells-eval interactivamente
+
+(with-eval-after-load 'code-cells
+  (define-key code-cells-mode-map (kbd "C-c C-c") 'my-save-and-eval-cell))
+
 
 ;; UI DOOM emacs
 (use-package doom-themes
@@ -230,3 +270,4 @@ Otherwise, indent the current line."
           (set-window-buffer (next-window) next-win-buffer)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
+

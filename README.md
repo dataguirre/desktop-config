@@ -16,6 +16,7 @@ instalar en archivo:
 ```bash
 sudo apt install /path/to/vivaldi-stable.deb
 ```
+Ingresar y crear los perfiles correspondientes (Personal y Trabajo)
 
 ## Cambiar wallpaper y foto de perfil
 Ir al drive y descargar pirate vito y batalla de la cima (LOTR)

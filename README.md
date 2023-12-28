@@ -10,4 +10,12 @@ sudo apt update && sudo update-pciids
 sudo apt install firmware-b43-installer && sudo apt install linux-firmware
 sudo reboot
 ```
-## 2.
+## 2. Descargar Vivaldi
+Ir a vivaldi descargas y descargar el archivo .deb
+instalar en archivo:
+```bash
+sudo apt install /path/to/vivaldi-stable.deb
+```
+
+## Cambiar wallpaper y foto de perfil
+Ir al drive y descargar pirate vito y batalla de la cima (LOTR)

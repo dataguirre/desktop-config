@@ -23,8 +23,16 @@ Ir al drive y descargar pirate vito y batalla de la cima (LOTR)
 
 ## 4. Instalar gnome extensions
 Ir a https://extensions.gnome.org e instalar la extension. Descargar vitals y agregarla temperatura, memoria usada (en GB) y uso de procesador.
+- Ir a extensions, pop shell setttings y eliminar el titulo de ventana.
 
 ## 5. Instalar gnome tweaks
 ```bash
 sudo apt install gnome-tweaks -y
+```
+- Hacer swap de Ctrl y Bloq Mayus.
+
+## 6. Instalar emacs.
+
+```bash
+sudo apt install emacs
 ```

@@ -18,5 +18,13 @@ sudo apt install /path/to/vivaldi-stable.deb
 ```
 Ingresar y crear los perfiles correspondientes (Personal y Trabajo)
 
-## Cambiar wallpaper y foto de perfil
+## 3. Cambiar wallpaper y foto de perfil
 Ir al drive y descargar pirate vito y batalla de la cima (LOTR)
+
+## 4. Instalar gnome extensions
+Ir a https://extensions.gnome.org e instalar la extension. Descargar vitals y agregarla temperatura, memoria usada (en GB) y uso de procesador.
+
+## 5. Instalar gnome tweaks
+```bash
+sudo apt install gnome-tweaks -y
+```

@@ -11,7 +11,7 @@ sudo nano /etc/NetworkManager/conf.d/default-wifi-powersave-on.conf
 ```
 y poner el powersave mode en 2
 
-## 1. Network drivers
+## 1. Network drivers (DEPRECATED)
 Si el wifi no está sirviendo, hay que instalar los drivers correspondientes. Primero, debemos obtener el PCI ID,
 ```
 lspci -nn -d 14e4:
@@ -22,7 +22,25 @@ sudo apt update && sudo update-pciids
 sudo apt install firmware-b43-installer && sudo apt install linux-firmware
 sudo reboot
 ```
-## 2. Descargar Vivaldi
+## 2. Cambiar wallpaper y foto de perfil
+Ir al drive y descargar pirate vito y batalla de la cima (LOTR)
+
+## 3. Instalar gnome extensions
+Ir a https://extensions.gnome.org e instalar la extension. Descargar vitals y agregarla temperatura, memoria usada (en GB) y uso de procesador.
+- Ir a extensions, pop shell setttings y eliminar el titulo de ventana.
+
+## 4. Instalar gnome tweaks
+```bash
+sudo apt install gnome-tweaks -y
+```
+- Hacer swap de Ctrl y Bloq Mayus.
+
+## 5. Instalar emacs.
+
+```bash
+sudo apt install emacs
+```
+## 6. Descargar Vivaldi
 Ir a vivaldi descargas y descargar el archivo .deb
 instalar en archivo:
 ```bash
@@ -30,21 +48,3 @@ sudo apt install /path/to/vivaldi-stable.deb
 ```
 Ingresar y crear los perfiles correspondientes (Personal y Trabajo)
 
-## 3. Cambiar wallpaper y foto de perfil
-Ir al drive y descargar pirate vito y batalla de la cima (LOTR)
-
-## 4. Instalar gnome extensions
-Ir a https://extensions.gnome.org e instalar la extension. Descargar vitals y agregarla temperatura, memoria usada (en GB) y uso de procesador.
-- Ir a extensions, pop shell setttings y eliminar el titulo de ventana.
-
-## 5. Instalar gnome tweaks
-```bash
-sudo apt install gnome-tweaks -y
-```
-- Hacer swap de Ctrl y Bloq Mayus.
-
-## 6. Instalar emacs.
-
-```bash
-sudo apt install emacs
-```

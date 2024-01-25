@@ -1,4 +1,16 @@
 # Configuración PopOS!
+## 1. Network drivers (UPDATE)
+Hacer la antigua configuración (siguiente texto) deja el wifi mal. Para instalar los drivers correspondientes, 
+```
+sudo apt ubuntu-driver autoinstall
+```
+Esto instalara el otro driver (no b43-installer, sino el kernel...) que corre mucho mejor (en mi caso)
+Otra configuración que puede boostear el wifi es
+```
+sudo nano /etc/NetworkManager/conf.d/default-wifi-powersave-on.conf
+```
+y poner el powersave mode en 2
+
 ## 1. Network drivers
 Si el wifi no está sirviendo, hay que instalar los drivers correspondientes. Primero, debemos obtener el PCI ID,
 ```

@@ -52,5 +52,8 @@ Ingresar y crear los perfiles correspondientes (Personal y Trabajo)
 Seguir los pasos de la web para instalar miniconda
 
 ## 8. Actualizar vista terminal
-
+Para mostrar el último directorio y no todo el path y el git:
+```bash
+PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\[\033[01;33m\]$(__git_ps1 " (%s)")\[\033[00m\]\$ '
+```
 

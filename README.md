@@ -48,3 +48,9 @@ sudo apt install /path/to/vivaldi-stable.deb
 ```
 Ingresar y crear los perfiles correspondientes (Personal y Trabajo)
 
+## 7. Instalar miniconda
+Seguir los pasos de la web para instalar miniconda
+
+## 8. Actualizar vista terminal
+
+

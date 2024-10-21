@@ -1,5 +1,5 @@
-(when (file-exists-p "~/.Xmodmap")
-  (shell-command "xmodmap ~/.Xmodmap"))
+;;(when (file-exists-p "~/.Xmodmap")
+;;(shell-command "xmodmap ~/.Xmodmap"))
 
 ;;  Basic configuration (initial config)
 (setq inhibit-startup-message t)
@@ -9,7 +9,7 @@
 (menu-bar-mode -1)
 (set-fringe-mode 10)
 (set-face-attribute 'default nil :height 110)
-
+(global-auto-revert-mode 1)
 (global-display-line-numbers-mode t)
 ;; para que tome snake_case como una palabra
 (global-superword-mode 1)
@@ -24,33 +24,11 @@
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (global-set-key (kbd "C-z") 'undo)
+;(global-set-key (kbd "<tab>") 'python-indent-shift-right)
+;(global-set-key (kbd "<backtab>") 'python-indent-shift-left)
 (global-set-key (kbd "C-<") 'python-indent-shift-left) 
 (global-set-key (kbd "C->") 'python-indent-shift-right)
-;(load-theme 'tango-dark)
-;; (defun desindentar-region-4-espacios ()
-;;   "Desindenta la región seleccionada en 4 espacios, manteniendo la selección."
-;;   (interactive)
-;;   (if (use-region-p)
-;;           (narrow-to-region (region-beginning) (region-end))
-;;           (indent-rigidly (point-min) (point-max) -4)))
-;;     (indent-rigidly (line-beginning-position) (line-end-position) -4)))
-
-;; (defun indentar-region-4-espacios ()
-;;   "Indentar la región seleccionada en 4 espacios, manteniendo la selección."
-;;   (interactive)
-;;   (if (use-region-p)
-;;       (save-excursion
-;;         (save-restriction
-;;           (narrow-to-region (region-beginning) (region-end))
-;;           (indent-rigidly (point-min) (point-max) 4)))
-;;     (indent-rigidly (line-beginning-position) (line-end-position) 4)))
-
-;; (defun configurar-python-mode ()
-;;   "Configura atajos de teclado específicos para python-mode."
-;;   (local-set-key [backtab] 'desindentar-region-4-espacios)
-;;   (local-set-key [tab] 'indentar-region-4-espacios))
-
-;; (add-hook 'python-mode-hook 'configurar-python-mode)
+(global-set-key (kbd "C-7") 'comment-line)
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -74,7 +52,7 @@
 
 (use-package ivy
   :diminish
-  :bind (("C-s" . swiper)
+  :bind (;("C-s" . swiper)
          :map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)	
          ("C-l" . ivy-alt-done)
@@ -98,6 +76,11 @@
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
+(use-package ag
+  :ensure t
+  :config
+  ;; Aquí puedes poner configuraciones adicionales si es necesario
+)
 ;; manejar ambientes virtuales con conda
 (use-package conda
   :init
@@ -155,6 +138,12 @@ Otherwise, indent the current line."
 (use-package sphinx-doc
   :hook ((python-mode . sphinx-doc-mode))
   )
+
+;; with use-package
+(use-package numpydoc
+  :ensure t
+  :bind (:map python-mode-map
+              ("C-c n" . numpydoc-generate)))
 
 ;; hover
 (use-package lsp-ui :commands lsp-ui-mode)
@@ -270,4 +259,3 @@ Otherwise, indent the current line."
           (set-window-buffer (next-window) next-win-buffer)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
-

@@ -1,5 +1,11 @@
-;;(when (file-exists-p "~/.Xmodmap")
-;;(shell-command "xmodmap ~/.Xmodmap"))
+
+
+;; (when (file-exists-p "~/.Xmodmap")
+;;   (shell-command "xmodmap ~/.Xmodmap"))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
 
 ;;  Basic configuration (initial config)
 (setq inhibit-startup-message t)
@@ -8,24 +14,22 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (set-fringe-mode 10)
-(set-face-attribute 'default nil :height 110)
-(global-auto-revert-mode 1)
+(set-face-attribute 'default nil :height 90)
 (global-display-line-numbers-mode t)
 ;; para que tome snake_case como una palabra
 (global-superword-mode 1)
-
+(global-auto-revert-mode t)
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
                 term-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
                 eshell-mode-hook
-		inferior-python-mode-hook))
+		inferior-python-mode-hook
+		vterm-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (global-set-key (kbd "C-z") 'undo)
-;(global-set-key (kbd "<tab>") 'python-indent-shift-right)
-;(global-set-key (kbd "<backtab>") 'python-indent-shift-left)
 (global-set-key (kbd "C-<") 'python-indent-shift-left) 
 (global-set-key (kbd "C->") 'python-indent-shift-right)
 (global-set-key (kbd "C-7") 'comment-line)
@@ -50,6 +54,38 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(use-package vterm
+  :ensure t)
+;; (setq-default display-fill-column-indicator-column 120)  ;; Configura el ancho máximo de línea (ajústalo a tu preferencia)
+;; (global-display-fill-column-indicator-mode t)
+
+; THEME SETUP
+(use-package modus-themes
+  :ensure t
+  :config
+  ;; Add all your customizations prior to loading the themes
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs nil)
+
+  ;; ;; Maybe define some palette overrides, such as by using our presets
+  (setq modus-themes-common-palette-overrides
+        modus-themes-preset-overrides-intense)
+  (setq custom-safe-themes t)
+  (setq modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
+  ;; Load the theme of your choice.
+
+  (modus-themes-load-theme 'modus-vivendi-tinted)
+
+  (define-key global-map (kbd "<f5>") #'modus-themes-toggle))
+
+(defun my-lsp-format-before-save ()
+  "Formatea el buffer usando lsp antes de guardarlo."
+  (when (and (bound-and-true-p lsp-mode)
+             (lsp-feature? "textDocument/formatting"))
+    (lsp-format-buffer)))
+
+(add-hook 'before-save-hook 'my-lsp-format-before-save)
+
 (use-package ivy
   :diminish
   :bind (;("C-s" . swiper)
@@ -68,8 +104,19 @@
    :init
     (add-hook 'after-init-hook 'ivy-mode))
 
+;; CONFIGURACION REMOTA
+;; OJO, en el servidor remoto, se debe poner lo que está en .bashrc a .profile
+;; Por ejemplo, la configuración de conda
+(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
 ;; CONFIGURACIÓN DE PYTHON
-;; para manejar projectos (debe haber .git o crear un .projectile en la carpeta raiz)
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (setq display-fill-column-indicator-column 120)  ;; Ajusta 80 a tu preferencia
+            (display-fill-column-indicator-mode t)))
+
+
 (use-package projectile
   :init
   (projectile-mode +1)
@@ -80,33 +127,46 @@
   :ensure t
   :config
   ;; Aquí puedes poner configuraciones adicionales si es necesario
-)
+  )
+
+;; Para que utilice ipdb en lugar de pdb
+(setenv "PYTHONBREAKPOINT" "ipdb.set_trace")
+(defun insert-python-breakpoint ()
+  "Insert a Python breakpoint() statement at point."
+  (interactive)
+  (insert "breakpoint()")
+  (newline-and-indent))
+(global-set-key (kbd "C-c b") 'insert-python-breakpoint)
+
+;; Autocompletado con company-mode
+(use-package company
+  :ensure t
+  :hook (python-mode . company-mode))
+
 ;; manejar ambientes virtuales con conda
 (use-package conda
   :init
   (setq conda-anaconda-home (expand-file-name "~/miniconda3"))  ; Ajusta la ruta según tu instalación
+  (setq conda-env-home-directory (expand-file-name "~/miniconda3"))
   :config
   (conda-env-initialize-interactive-shells)
   (conda-env-initialize-eshell)
-  (conda-env-autoactivate-mode t))
-
+)
 ;; utilizar ipython por defecto
 (setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True --InteractiveShell.colors='Linux' --InteractiveShell.autoindent=True")
+      python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True --InteractiveShell.colors='Linux' --InteractiveShell.autoindent=True"
+      python-shell-completion-native-enable nil
+	    )
 
-;; ;; cargar autoreload siempre cuando se abra un ipython
-(defun my-ipython-autoreload-setup ()
-  (python-shell-send-string "%load_ext autoreload")
-  (python-shell-send-string "%autoreload 2"))
-(add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup)
+;; cargar autoreload siempre cuando se abra un ipython
+;; (defun my-ipython-autoreload-setup ()
+;;   (python-shell-send-string "%load_ext autoreload")
+;;   (python-shell-send-string "%autoreload 2"))
+;; (add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup)
 
-; mejorar autocompletado con company
-(use-package company
-  :hook ((python-mode . company-mode)
-	 )
-  :bind (:map company-active-map ("TAB" . company-complete-selection))
-  )
 
+
+(add-hook 'python-mode-hook(lambda () (electric-pair-mode 1)))
 (use-package lsp-mode
   :init
   (setq lsp-keymap-prefix "C-l")
@@ -116,50 +176,8 @@
   (define-key lsp-mode-map [tab] nil)  ; Unbind the existing TAB binding
   (define-key lsp-mode-map (kbd "TAB") 'my/tab-completion-or-indent)  ; Rebind to custom function
   :commands lsp)
-
-(with-eval-after-load 'company
-  (define-key company-active-map (kbd "TAB") 'company-complete-selection)
-  (define-key company-active-map [tab] 'company-complete-selection)
-(defun my/tab-completion-or-indent ()
-  "Indents or completes depending on the context.
-If preceding character is part of a word or a parenthetical, invoke `completion-at-point`.
-Otherwise, indent the current line."
-  (interactive)
-  (if (looking-back "[\\w\\_\\-\\(\\)\\[\\]{}]" 1)
-      (completion-at-point)
-    (indent-for-tab-command)))
-)
-
-
-(use-package lsp-jedi)
-
-
-;; autodocstrings
-(use-package sphinx-doc
-  :hook ((python-mode . sphinx-doc-mode))
-  )
-
-;; with use-package
-(use-package numpydoc
-  :ensure t
-  :bind (:map python-mode-map
-              ("C-c n" . numpydoc-generate)))
-
-;; hover
-(use-package lsp-ui :commands lsp-ui-mode)
-
-(use-package which-key
-    :config
-    (which-key-mode))
-
-
-(with-eval-after-load 'python
-      (define-key inferior-python-mode-map (kbd "<up>") 'comint-previous-input)
-      (define-key inferior-python-mode-map (kbd "<down>") 'comint-next-input))
-
-
-(add-hook 'python-mode-hook(lambda () (electric-pair-mode 1)))
-
+(use-package lsp-jedi
+  :ensure t)
 
 (use-package code-cells
   :hook (python-mode . code-cells-mode)
@@ -208,22 +226,11 @@ Otherwise, indent the current line."
   (define-key code-cells-mode-map (kbd "C-c C-c") 'my-save-and-eval-cell))
 
 
-;; UI DOOM emacs
-(use-package doom-themes
-  :ensure t
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-one t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config))
-
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 25)))
+  ;:custom ((doom-modeline-height 25))
+  )
 
 
 ;; personal commands

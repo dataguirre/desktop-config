@@ -36,19 +36,19 @@ sudo apt install gnome-tweaks -y
 - Hacer swap de Ctrl y Bloq Mayus.
 
 ## 5. Instalar emacs.
-UNa forma de instalarlo es directamente con apt, pero este no dará la última actualización de emacs.
+Una forma de instalarlo es directamente con apt, pero este no dará siempre la última actualización de emacs.
 
 ```bash
 sudo apt install emacs
 ```
-Para obtener las últimas versiones, se debe descargar emacs de la fuente. A continuación se encuentra una guía detallada: https://www.gnu.org/software/emacs/manual/html_node/efaq/Installing-Emacs.html
+Para obtener las últimas versiones, se debe descargar emacs de la fuente. A continuación se encuentra una guía de GNU: https://www.gnu.org/software/emacs/manual/html_node/efaq/Installing-Emacs.html
 
 Posibles errores: 
 1. Puede ser necesario descargar las dependencias. ```sudo apt-get build-dep emacs```
 2. Revisar una guía detallada para instalar emacs, seguir la guía de GNU y la siguiente: https://www.rahuljuliato.com/posts/compiling_emacs_29_2 
 
 NOTA: no borrar la instalación (la carpeta con emacs-<VERSION>) para desinstalarlo en el futuro es necesario.
-
+Antes de ejecutar el ```init.el```, revisar las dependencias del paquete vterm (Cmake y demás), necesarios para que se ejecute correctamente todo ```init.el```
 ## 6. Descargar Vivaldi
 Ir a vivaldi descargas y descargar el archivo .deb
 instalar en archivo:
@@ -96,3 +96,24 @@ connect-vpn() {
 }
 
 ```
+## 10. Conectarse a servidores por SSH.
+Agregar en el archivo ```.ssh/config``` la siguiente información de los servidores:
+
+```
+Host <NOMBRE SERVIDOR>
+HostName <DIRRECION IP>
+User <USUARIO>
+```
+
+Usar el comando ```ssh <NOMBRE SERVIDOR>``` para conectarse al servidor a través del archivo generado. De lo contrario, ```ssh <USUARIO>@<IP SERVIDOR>```.
+
+Para no ingresar cada vez la contraseña, se debe inscribir el computador en el servidor. Para esto, se genera una llave SSH en el computador del que se accede y se inscribe en la máquina remota. 
+1. Generar la llave pública:
+```bash
+ssh-keygen
+```
+2. Copiar la llave en la máquina remota:
+```bash
+ssh-copy-id remote_username@remote_server_ip_address
+```
+

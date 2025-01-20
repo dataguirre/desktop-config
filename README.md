@@ -90,7 +90,7 @@ connect-vpn() {
                 --servercert your-ecp-server-cert
             ;;
         *)
-            echo "Usage: connect-vpn {<VPN1>|<ecp>}"
+            echo "Usage: connect-vpn {<VPN1>|<VPN2>}"
             ;;
     esac
 }

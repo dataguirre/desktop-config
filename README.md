@@ -36,10 +36,19 @@ sudo apt install gnome-tweaks -y
 - Hacer swap de Ctrl y Bloq Mayus.
 
 ## 5. Instalar emacs.
+UNa forma de instalarlo es directamente con apt, pero este no dará la última actualización de emacs.
 
 ```bash
 sudo apt install emacs
 ```
+Para obtener las últimas versiones, se debe descargar emacs de la fuente. A continuación se encuentra una guía detallada: https://www.gnu.org/software/emacs/manual/html_node/efaq/Installing-Emacs.html
+
+Posibles errores: 
+1. Puede ser necesario descargar las dependencias. ```sudo apt-get build-dep emacs```
+2. Revisar una guía detallada para instalar emacs, seguir la guía de GNU y la siguiente: https://www.rahuljuliato.com/posts/compiling_emacs_29_2 
+
+NOTA: no borrar la instalación (la carpeta con emacs-<VERSION>) para desinstalarlo en el futuro es necesario.
+
 ## 6. Descargar Vivaldi
 Ir a vivaldi descargas y descargar el archivo .deb
 instalar en archivo:
@@ -48,12 +57,42 @@ sudo apt install /path/to/vivaldi-stable.deb
 ```
 Ingresar y crear los perfiles correspondientes (Personal y Trabajo)
 
-## 7. Instalar miniconda
+## 7. Instalar miniconda (DEPRECATED)
 Seguir los pasos de la web para instalar miniconda
+
+## 7. Instalar UV
+UV es un manejador de paquetes de python más rápido y eficiente que conda. 
 
 ## 8. Actualizar vista terminal
 Para mostrar el último directorio y no todo el path y el git:
 ```bash
 PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\[\033[01;33m\]$(__git_ps1 " (%s)")\[\033[00m\]\$ '
 ```
+## 9. Conectar VPN por comando
+Agregar el siguiente código en el archivo ```.bashrc```. Se está usando open connect, este tiene distintos protocolos que permite conectarse a VPNs, en algunos casos como Cisco (la de la universidad), toca descargar su herramienta.
+```bash
+connect-vpn() {
+    case $1 in
+        <VPN1>)
+            echo "<PASSWORD_VPN1>" | sudo openconnect \
+                --user=<USER_VPN1> \
+                --passwd-on-stdin \
+                --protocol=fortinet \
+                200.26.145.18:10443 \
+                --servercert pin-sha256:wo/guFvTHsF8G/3iV8dIy276hO/b2TadvIz7nfJQ7js=
+            ;;
+        <VPN2>)
+            echo "<PASSWORD_VPN2>" | sudo openconnect \
+                --user=<USER_VPN2> \
+                --passwd-on-stdin \
+                --protocol=fortinet \
+                your-ecp-server-address \
+                --servercert your-ecp-server-cert
+            ;;
+        *)
+            echo "Usage: connect-vpn {<VPN1>|<ecp>}"
+            ;;
+    esac
+}
 
+```

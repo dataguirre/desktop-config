@@ -1,5 +1,3 @@
-
-
 ;; (when (file-exists-p "~/.Xmodmap")
 ;;   (shell-command "xmodmap ~/.Xmodmap"))
 
@@ -14,7 +12,7 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (set-fringe-mode 10)
-(set-face-attribute 'default nil :height 90)
+(set-face-attribute 'default nil :height 100)
 (global-display-line-numbers-mode t)
 ;; para que tome snake_case como una palabra
 (global-superword-mode 1)
@@ -54,29 +52,57 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+;; Ojo, tener instalado Cmake y otras librerías, revisar en la documentación oficial
 (use-package vterm
   :ensure t)
-;; (setq-default display-fill-column-indicator-column 120)  ;; Configura el ancho máximo de línea (ajústalo a tu preferencia)
-;; (global-display-fill-column-indicator-mode t)
+
+
+(use-package magit
+  :config
+
+  (defun exec-commitizen ()
+  "Run 'uv run cz commit' in a vterm shell within the Git repository, then close the buffer."
+  (interactive)
+  (let* ((default-directory (magit-toplevel))
+         (buffer-name "*magit-vterm*"))
+    ;; Open or switch to a named vterm buffer
+    (vterm buffer-name) 
+    ;; Send the command
+    (vterm-send-string "uv run cz commit") 
+    (vterm-send-return) 
+    (message "Command 'uv run cz commit' executed in vterm.")))
+
+  ;; Add the custom option to the Magit commit popup
+  (transient-append-suffix 'magit-commit "c"
+    '("z" "commitizen" exec-commitizen))
+  :bind (("C-x g" . magit-status)
+         ("C-x C-g" . magit-status)))
 
 ; THEME SETUP
-(use-package modus-themes
+(use-package gruvbox-theme
   :ensure t
   :config
-  ;; Add all your customizations prior to loading the themes
-  (setq modus-themes-italic-constructs t
-        modus-themes-bold-constructs nil)
-
-  ;; ;; Maybe define some palette overrides, such as by using our presets
-  (setq modus-themes-common-palette-overrides
-        modus-themes-preset-overrides-intense)
   (setq custom-safe-themes t)
-  (setq modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
-  ;; Load the theme of your choice.
+  (load-theme 'gruvbox-dark-medium)
+  )
 
-  (modus-themes-load-theme 'modus-vivendi-tinted)
+;; (use-package modus-themes
+;;   :ensure t
+;;   :config
+;;   ;; Add all your customizations prior to loading the themes
+;;   (setq modus-themes-italic-constructs t
+;;         modus-themes-bold-constructs nil)
 
-  (define-key global-map (kbd "<f5>") #'modus-themes-toggle))
+;;   ;; ;; Maybe define some palette overrides, such as by using our presets
+;;   ;; (setq modus-themes-common-palette-overrides
+;;         ;; modus-themes-preset-overrides-intense)
+;;   (setq custom-safe-themes t)
+;;   (setq modus-themes-to-toggle '(zenburn-theme modus-vivendi-tinted))
+;;   ;; Load the theme of your choice.
+
+;;   (modus-themes-load-theme 'zenburn-theme)
+
+;;   (define-key global-map (kbd "<f5>") #'modus-themes-toggle))
 
 (defun my-lsp-format-before-save ()
   "Formatea el buffer usando lsp antes de guardarlo."
@@ -84,7 +110,7 @@
              (lsp-feature? "textDocument/formatting"))
     (lsp-format-buffer)))
 
-(add-hook 'before-save-hook 'my-lsp-format-before-save)
+;; (add-hook 'before-save-hook 'my-lsp-format-before-save)
 
 (use-package ivy
   :diminish
@@ -113,7 +139,7 @@
 
 (add-hook 'python-mode-hook
           (lambda ()
-            (setq display-fill-column-indicator-column 120)  ;; Ajusta 80 a tu preferencia
+            (setq display-fill-column-indicator-column 88)  ;; Ajusta 88 a tu preferencia
             (display-fill-column-indicator-mode t)))
 
 
@@ -123,6 +149,7 @@
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
+;; Instalar silversearch antes
 (use-package ag
   :ensure t
   :config
@@ -139,52 +166,90 @@
 (global-set-key (kbd "C-c b") 'insert-python-breakpoint)
 
 ;; Autocompletado con company-mode
-(use-package company
+;; (use-package company
+;;   :ensure t
+;;   :hook (python-mode . company-mode))
+
+(use-package numpydoc
   :ensure t
-  :hook (python-mode . company-mode))
-
-;; manejar ambientes virtuales con conda
-(use-package conda
   :init
-  (setq conda-anaconda-home (expand-file-name "~/miniconda3"))  ; Ajusta la ruta según tu instalación
-  (setq conda-env-home-directory (expand-file-name "~/miniconda3"))
+  (setq numpydoc-insert-examples-block nil) ; Skip Examples block
   :config
-  (conda-env-initialize-interactive-shells)
-  (conda-env-initialize-eshell)
-)
-;; utilizar ipython por defecto
-(setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True --InteractiveShell.colors='Linux' --InteractiveShell.autoindent=True"
-      python-shell-completion-native-enable nil
-	    )
+  (add-hook 'python-mode-hook 'numpydoc-mode)
+  :bind (("C-c n" . numpydoc-generate)))
 
-;; cargar autoreload siempre cuando se abra un ipython
-;; (defun my-ipython-autoreload-setup ()
-;;   (python-shell-send-string "%load_ext autoreload")
-;;   (python-shell-send-string "%autoreload 2"))
-;; (add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup)
+
+(defun my-ipython-autoreload-setup ()
+  (python-shell-send-string "%load_ext autoreload")
+  (python-shell-send-string "%autoreload 2"))
 
 
 
+(defun get-path-ipython ()
+  "Return the file path if it exists, otherwise nil, based on a constructed file path."
+  (let ((file (concat (pet-virtualenv-root) "bin/ipython")))
+    (if (file-exists-p file)
+        (file-local-name file)  ;; Return the file path if it exists
+      nil))
+  )  ;; Return nil if the file does not exist
+
+(defun get-path-jedi-lsp ()
+  "Return the file path if it exists, otherwise nil, based on a constructed file path."
+  (let ((file (concat (pet-virtualenv-root) "bin/jedi-language-server")))
+    (if (file-exists-p file)
+        (if (file-remote-p file)
+            "jedi-language-server"  ;; Return 'ruff' if the file is remote
+          (file-local-name file))  ;; Otherwise, return the local file path
+      nil)))  ;; Return nil if the file does not exist
+
+(defun get-path-ruff-lsp ()
+  "Return the file path if it exists, otherwise nil, based on a constructed file path."
+  (let ((file (concat (pet-virtualenv-root) "bin/ruff")))
+    (if (file-exists-p file)
+        (if (file-remote-p file)
+            "ruff"  ;; Return 'ruff' if the file is remote
+          (file-local-name file))  ;; Otherwise, return the local file path
+      nil)))  ;; Return nil if the file does not exist
+
+;; OJO: para que lsp funcione en remoto, toca agregar el bin de los proyecto en .bashrc del remoto
+(use-package pet
+  :config
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq-local python-shell-interpreter (get-path-ipython)
+			  python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True --InteractiveShell.colors='Linux' --InteractiveShell.autoindent=True"
+			  python-shell-completion-native-enable nil
+                          python-shell-virtualenv-root (pet-virtualenv-root)
+			  )
+	      (setq-local lsp-jedi-executable-command (get-path-jedi-lsp)
+			  )
+	      (setq-local lsp-ruff-server-command (list (get-path-ruff-lsp) "server")
+			  )
+	      ))
+  (add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup))
 (add-hook 'python-mode-hook(lambda () (electric-pair-mode 1)))
+
 (use-package lsp-mode
   :init
   (setq lsp-keymap-prefix "C-l")
-  :hook ((python-mode . lsp)
+  :hook ((python-mode . lsp-deferred)
          (lsp-mode . lsp-enable-which-key-integration))
   :config
   (define-key lsp-mode-map [tab] nil)  ; Unbind the existing TAB binding
   (define-key lsp-mode-map (kbd "TAB") 'my/tab-completion-or-indent)  ; Rebind to custom function
+    ;; Especifica solo los servidores LSP que quieres usar
+  (setq lsp-disabled-clients '(lsp-copilot copilot-lsp copilot-ls))
   :commands lsp)
 (use-package lsp-jedi
   :ensure t)
 
+;; Para manipular celdas
 (use-package code-cells
   :hook (python-mode . code-cells-mode)
   :bind (:map code-cells-mode-map
 	      ("C-c C-c" . code-cells-eval)
 	      ("C-c C-l" . code-cells-load)
-	      ("C-c C-d" . code-cells-clear)
+	      ("C-c C-d" . code-cells-delete)
 	      ("C-M-<up>" . code-cells-backward-cell)
 	      ("C-M-<down>" . code-cells-forward-cell)
 	     ; ("C-c C-<up>" . code-cells-move-cell-up)
@@ -229,18 +294,22 @@
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  ;:custom ((doom-modeline-height 25))
+  ;; :custom ((doom-modeline-height 25))
   )
 
 
 ;; personal commands
-(defun conda-ac (&optional name)
-  "Switch to environment NAME, prompting if called interactively."
-  (interactive)
-  (let* ((env-name (or name (conda--read-env-name)))
-         (env-dir (conda-env-name-to-dir env-name)))
-    (conda-env-activate-path env-dir))
-  (revert-buffer :ignore-auto :noconfirm))
+(defun connect-vpn (vpn-name)
+  "Open a buffer and run the VPN connection using the Bash function `connect-vpn` with VPN-NAME as an argument."
+  (interactive "sEnter VPN name: ")
+  (let ((buffer-name (format "*VPN-%s*" vpn-name)))
+    (if (get-buffer buffer-name)
+        (switch-to-buffer buffer-name)
+      (progn
+        (vterm buffer-name)
+        (vterm-send-string (format "connect-vpn %s" vpn-name))
+        (vterm-send-return)))))
+
 
 (defun toggle-window-split ()
   (interactive)

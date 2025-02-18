@@ -12,7 +12,7 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (set-fringe-mode 10)
-(set-face-attribute 'default nil :height 100)
+(set-face-attribute 'default nil :height 110)
 (global-display-line-numbers-mode t)
 ;; para que tome snake_case como una palabra
 (global-superword-mode 1)
@@ -24,7 +24,8 @@
                 treemacs-mode-hook
                 eshell-mode-hook
 		inferior-python-mode-hook
-		vterm-mode-hook))
+		vterm-mode-hook
+		pdf-view-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (global-set-key (kbd "C-z") 'undo)
@@ -54,7 +55,10 @@
 
 ;; Ojo, tener instalado Cmake y otras librerías, revisar en la documentación oficial
 (use-package vterm
-  :ensure t)
+  :ensure t
+   :config
+  (add-hook 'emacs-startup-hook #'vterm))
+
 
 
 (use-package magit
@@ -79,14 +83,59 @@
          ("C-x C-g" . magit-status)))
 
 ; THEME SETUP
-(use-package gruvbox-theme
+;; (use-package gruvbox-theme
+;;   :ensure t
+;;   :config
+;;   (setq custom-safe-themes t)
+;;   (load-theme 'gruvbox-dark-medium)
+;;   )
+
+
+;; (defun toggle-transparency ()
+;;   "Toggle the transparency of the Emacs frame using alpha-background."
+;;   (interactive)
+;;   (let ((current-alpha (frame-parameter nil 'alpha-background)))
+;;     (if (equal current-alpha 100)
+;;         (progn
+;;           (set-frame-parameter nil 'alpha-background 90)
+;;           (add-to-list 'default-frame-alist '(alpha-background . 90)))
+;;       (progn
+;;         (set-frame-parameter nil 'alpha-background 100)
+;;         (add-to-list 'default-frame-alist '(alpha-background . 100))))))
+
+;; (defun toggle-transparency ()
+;;   "Toggle the transparency of the Emacs frame using alpha-background."
+;;   (interactive)
+;;   (let ((current-alpha (frame-parameter nil 'alpha-background)))
+;;     (if (equal current-alpha 100)
+;;         (set-frame-parameter nil 'alpha-background 90)  ;; Set to transparent
+;;       (set-frame-parameter nil 'alpha-background 100))))  ;; Set to opaque
+
+;; (global-set-key (kbd "C-c t") 'toggle-transparency)
+(defun transparency (value)
+   "Sets the transparency of the frame window. 0=transparent/100=opaque"
+   (interactive "nTransparency Value 0 - 100 opaque:")
+  (set-frame-parameter nil 'alpha-background value)
+  (add-to-list 'default-frame-alist '(alpha-background . value)))
+
+(use-package ef-themes
   :ensure t
   :config
+  ;; Add all your customizations prior to loading the themes
+  ;; (setq ef-themes-italic-constructs t
+  ;;       ef-themes-bold-constructs nil)
   (setq custom-safe-themes t)
-  (load-theme 'gruvbox-dark-medium)
-  )
+  (setq ef-themes-to-toggle '(ef-autumn ef-bio))
+  ;; Load the theme of your choice.
 
-;; (use-package modus-themes
+  (ef-themes-load-theme 'ef-autumn)
+  (set-frame-parameter nil 'alpha-background 90)
+  (add-to-list 'default-frame-alist '(alpha-background . 90))
+
+
+  (define-key global-map (kbd "<f5>") #'ef-themes-toggle))
+
+;; ;; (use-package modus-themes
 ;;   :ensure t
 ;;   :config
 ;;   ;; Add all your customizations prior to loading the themes
@@ -135,6 +184,17 @@
 ;; Por ejemplo, la configuración de conda
 (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
 
+
+(use-package pdf-tools
+  :ensure t
+  :pin manual ;; don't reinstall when package updates
+  :mode  ("\\.pdf\\'" . pdf-view-mode)
+  :config
+  (setq-default pdf-view-display-size 'fit-page)
+  (setq pdf-annot-activate-created-annotations t)
+  (pdf-tools-install :no-query)
+  (require 'pdf-occur))
+
 ;; CONFIGURACIÓN DE PYTHON
 
 (add-hook 'python-mode-hook
@@ -173,15 +233,8 @@
 (use-package numpydoc
   :ensure t
   :init
-  (setq numpydoc-insert-examples-block nil) ; Skip Examples block
-  :config
-  (add-hook 'python-mode-hook 'numpydoc-mode)
-  :bind (("C-c n" . numpydoc-generate)))
+  (setq numpydoc-insert-examples-block nil) )
 
-
-(defun my-ipython-autoreload-setup ()
-  (python-shell-send-string "%load_ext autoreload")
-  (python-shell-send-string "%autoreload 2"))
 
 
 
@@ -212,6 +265,12 @@
       nil)))  ;; Return nil if the file does not exist
 
 ;; OJO: para que lsp funcione en remoto, toca agregar el bin de los proyecto en .bashrc del remoto
+(defun my-ipython-autoreload ()
+  "Enable %autoreload in IPython shell."
+  (when (derived-mode-p 'inferior-python-mode)
+    (comint-send-string (get-buffer-process (current-buffer))
+                        "%load_ext autoreload\n%autoreload 2\n")))
+(add-hook 'inferior-python-mode-hook 'my-ipython-autoreload)
 (use-package pet
   :config
   (add-hook 'python-mode-hook
@@ -226,8 +285,8 @@
 	      (setq-local lsp-ruff-server-command (list (get-path-ruff-lsp) "server")
 			  )
 	      ))
-  (add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup))
-(add-hook 'python-mode-hook(lambda () (electric-pair-mode 1)))
+  ;; (add-hook 'inferior-python-mode-hook 'my-ipython-autoreload-setup)
+  (add-hook 'python-mode-hook(lambda () (electric-pair-mode 1))))
 
 (use-package lsp-mode
   :init
@@ -255,7 +314,8 @@
 	     ; ("C-c C-<up>" . code-cells-move-cell-up)
 	     ; ("C-c C-<down>" . code-cells-move-cell-down)
 	      ("C-c C-n" . insert-new-cell)
-          ("C-c C-m" . code-cells-move-mode))
+              ("C-c C-m" . code-cells-move-mode)
+	      ("C-c n" . numpydoc-generate))
   :config
   (defvar code-cells-move-mode-keymap
     (let ((map (make-sparse-keymap)))

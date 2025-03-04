@@ -49,6 +49,10 @@ Posibles errores:
 
 NOTA: no borrar la instalación (la carpeta con emacs-<VERSION>) para desinstalarlo en el futuro es necesario.
 Antes de ejecutar el ```init.el```, revisar las dependencias del paquete vterm (Cmake y demás), necesarios para que se ejecute correctamente todo ```init.el```
+
+Instalar fuentes: sudo apt install fonts-firacode fonts-cantarell
+Instalar para `org-latex`: sudo apt install dvisvgm
+
 ## 6. Descargar Vivaldi
 Ir a vivaldi descargas y descargar el archivo .deb
 instalar en archivo:
@@ -116,4 +120,6 @@ ssh-keygen
 ```bash
 ssh-copy-id remote_username@remote_server_ip_address
 ```
+
+
 

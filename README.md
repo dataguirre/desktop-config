@@ -52,7 +52,7 @@ Antes de ejecutar el ```init.el```, revisar las dependencias del paquete vterm (
 
 Instalar fuentes: sudo apt install fonts-firacode fonts-cantarell
 Instalar para `org-latex`: sudo apt install dvisvgm
-Para instalar `pdf-tools`, eliminar la parte que hice :pin manual y cerrar y abrir emacs otra vez, va a instalar varios paquetes (como libgcc) y ya volverlo a poner.
+Para instalar `pdf-tools`, eliminar la parte que hice :pin manual y cerrar y abrir emacs otra vez, va a instalar varios paquetes (como libgcc) y ya volverlo a poner (:pin manual)
 ## 6. Descargar Vivaldi
 Ir a vivaldi descargas y descargar el archivo .deb
 instalar en archivo:
